@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A4 Image Layout</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #e0e0e0;
+    font-family: sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 30px 20px;
+    min-height: 100vh;
+  }
+
+  .controls {
+    background: #fff;
+    border-radius: 10px;
+    padding: 24px 32px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    width: 100%;
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .controls h2 { font-size: 18px; margin-bottom: 4px; }
+
+  .controls label {
+    font-size: 14px;
+    font-weight: 600;
+    display: block;
+    margin-bottom: 4px;
+    color: #333;
+  }
+
+  .controls input[type="text"] {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 15px;
+    border: 1.5px solid #ccc;
+    border-radius: 6px;
+    outline: none;
+  }
+
+  .controls input[type="text"]:focus { border-color: #4a90d9; }
+
+  .file-row { display: flex; gap: 16px; }
+  .file-row > div { flex: 1; }
+
+  .btn-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 4px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    padding: 10px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .btn-primary { background: #4a90d9; color: #fff; }
+  .btn-primary:hover { background: #3a7bc8; }
+
+  .btn-secondary { background: #555; color: #fff; }
+  .btn-secondary:hover { background: #444; }
+
+  .btn-success { background: #2ea043; color: #fff; }
+  .btn-success:hover { background: #26893a; }
+
+  .btn-warning { background: #d97a1a; color: #fff; }
+  .btn-warning:hover { background: #b86515; }
+
+  /* --- A4 Page --- */
+  .a4-page {
+    width: 210mm;
+    height: 297mm;
+    background: #fff;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    flex-shrink: 0;
+    padding: 15mm 10mm 15mm 15mm;
+  }
+
+  .page-title {
+    position: absolute;
+    top: 15mm;
+    left: 15mm;
+    right: 10mm;
+    text-align: center;
+    font-family: 'Inter', sans-serif;
+    font-size: 48px;
+    color: #000;
+    line-height: 1.2;
+    pointer-events: none;
+  }
+
+  .page-image {
+    position: absolute;
+    height: 75mm;
+    transform: translate(-50%, -50%);
+    object-fit: contain;
+  }
+
+  .placeholder-text {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    font-size: 14px;
+    color: #aaa;
+    text-align: center;
+    pointer-events: none;
+  }
+
+  /* --- Print Styles --- */
+  @media print {
+    body { background: none; padding: 0; margin: 0; }
+    .controls { display: none !important; }
+    .a4-page {
+      box-shadow: none;
+      margin: 0;
+      page-break-after: always;
+    }
+    @page { size: A4 portrait; margin: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="controls">
+  <h2>A4 Image Layout</h2>
+
+  <div>
+    <label for="titleInput">Title</label>
+    <div style="display:flex;gap:10px;">
+      <input type="text" id="titleInput" placeholder="Enter title text…" style="flex:1;">
+      <input type="number" id="fontSizeInput" placeholder="48" min="1" style="width:80px;padding:8px 10px;font-size:15px;border:1.5px solid #ccc;border-radius:6px;outline:none;text-align:center;" title="Font size in px">
+      <span style="align-self:center;font-size:13px;color:#888;">px</span>
+    </div>
+  </div>
+
+  <div class="file-row">
+    <div>
+      <label for="img1Input">Image 1 (top)</label>
+      <input type="file" id="img1Input" accept="image/*">
+    </div>
+    <div>
+      <label for="img2Input">Image 2 (bottom)</label>
+      <input type="file" id="img2Input" accept="image/*">
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" id="applyBtn">Apply</button>
+    <button class="btn btn-secondary" id="printBtn">🖨️ Print</button>
+    <button class="btn btn-success" id="exportPng">📷 Export PNG</button>
+    <button class="btn btn-warning" id="exportJpg">📷 Export JPEG</button>
+  </div>
+</div>
+
+<div class="a4-page" id="a4Page">
+  <div class="page-title" id="pageTitle"></div>
+  <span class="placeholder-text" id="ph1" style="left:105mm; top:97.5mm;">Image 1</span>
+  <span class="placeholder-text" id="ph2" style="left:105mm; top:202.5mm;">Image 2</span>
+</div>
+
+<script>
+  const titleInput = document.getElementById('titleInput');
+  const img1Input = document.getElementById('img1Input');
+  const img2Input = document.getElementById('img2Input');
+  const applyBtn = document.getElementById('applyBtn');
+  const printBtn = document.getElementById('printBtn');
+  const exportPng = document.getElementById('exportPng');
+  const exportJpg = document.getElementById('exportJpg');
+  const pageTitle = document.getElementById('pageTitle');
+  const a4Page = document.getElementById('a4Page');
+  const ph1 = document.getElementById('ph1');
+  const ph2 = document.getElementById('ph2');
+
+  const fontSizeInput = document.getElementById('fontSizeInput');
+
+  function getTitleFontSize() {
+    const val = parseInt(fontSizeInput.value);
+    return (val && val > 0) ? val : 48;
+  }
+
+  let img1El = null, img2El = null;
+  let img1Src = null, img2Src = null;
+
+  function placeImage(file, centerLeftMM, centerTopMM, placeholder, existingEl, srcIndex) {
+    return new Promise((resolve) => {
+      if (!file) { resolve(existingEl); return; }
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        if (existingEl) existingEl.remove();
+        const img = document.createElement('img');
+        img.className = 'page-image';
+        img.src = e.target.result;
+        img.style.left = centerLeftMM + 'mm';
+        img.style.top = centerTopMM + 'mm';
+        a4Page.appendChild(img);
+        placeholder.style.display = 'none';
+        if (srcIndex === 1) img1Src = e.target.result;
+        if (srcIndex === 2) img2Src = e.target.result;
+        resolve(img);
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  applyBtn.addEventListener('click', async () => {
+    pageTitle.textContent = titleInput.value;
+    pageTitle.style.fontSize = getTitleFontSize() + 'px';
+    const f1 = img1Input.files[0];
+    const f2 = img2Input.files[0];
+    img1El = await placeImage(f1, 105, 97.5, ph1, img1El, 1);
+    img2El = await placeImage(f2, 105, 202.5, ph2, img2El, 2);
+  });
+
+  titleInput.addEventListener('input', () => {
+    pageTitle.textContent = titleInput.value;
+    pageTitle.style.fontSize = getTitleFontSize() + 'px';
+  });
+
+  fontSizeInput.addEventListener('input', () => {
+    pageTitle.style.fontSize = getTitleFontSize() + 'px';
+  });
+
+  printBtn.addEventListener('click', () => window.print());
+
+  // --- Export via Canvas ---
+  const MM_TO_PX = 96 / 25.4; // CSS px per mm at 96 DPI
+  const A4_W = 210, A4_H = 297;
+  const SCALE = 3; // 3x for high-res export (~300 DPI)
+
+  function mmToPx(mm) { return mm * MM_TO_PX * SCALE; }
+
+  function loadImg(src) {
+    return new Promise((resolve, reject) => {
+      if (!src) { resolve(null); return; }
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.src = src;
+    });
+  }
+
+  async function renderToCanvas() {
+    const cw = mmToPx(A4_W), ch = mmToPx(A4_H);
+    const canvas = document.createElement('canvas');
+    canvas.width = cw;
+    canvas.height = ch;
+    const ctx = canvas.getContext('2d');
+
+    // White background
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, cw, ch);
+
+    // Title
+    const title = titleInput.value;
+    if (title) {
+      const fontSize = getTitleFontSize() * SCALE;
+      ctx.font = `${fontSize}px 'Inter', sans-serif`;
+      ctx.fillStyle = '#000';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      const padLeft = mmToPx(15);
+      const padRight = mmToPx(10);
+      const centerX = padLeft + (cw - padLeft - padRight) / 2;
+      ctx.fillText(title, centerX, mmToPx(15));
+    }
+
+    // Draw images
+    async function drawImg(src, cxMM, cyMM) {
+      const img = await loadImg(src);
+      if (!img) return;
+      const hPx = mmToPx(75);
+      const ratio = img.naturalWidth / img.naturalHeight;
+      const wPx = hPx * ratio;
+      const cx = mmToPx(cxMM), cy = mmToPx(cyMM);
+
+      // Clip to padded area
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(mmToPx(15), mmToPx(15), mmToPx(A4_W - 15 - 10), mmToPx(A4_H - 30));
+      ctx.clip();
+      ctx.drawImage(img, cx - wPx / 2, cy - hPx / 2, wPx, hPx);
+      ctx.restore();
+    }
+
+    await drawImg(img1Src, 105, 97.5);
+    await drawImg(img2Src, 105, 202.5);
+
+    return canvas;
+  }
+
+  function downloadCanvas(canvas, filename, mimeType, quality) {
+    const link = document.createElement('a');
+    link.download = filename;
+    link.href = canvas.toDataURL(mimeType, quality);
+    link.click();
+  }
+
+  exportPng.addEventListener('click', async () => {
+    const canvas = await renderToCanvas();
+    downloadCanvas(canvas, 'layout.png', 'image/png');
+  });
+
+  exportJpg.addEventListener('click', async () => {
+    const canvas = await renderToCanvas();
+    downloadCanvas(canvas, 'layout.jpg', 'image/jpeg', 0.92);
+  });
+</script>
+</body>
+</html>
