@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Tools</title>
+        <link
+            rel="icon"
+            href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>"
+        />
+        <style>
+            *,
+            *::before,
+            *::after {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+
+            :root {
+                --bg: #0d1117;
+                --card-bg: #161b22;
+                --border: #30363d;
+                --text: #e6edf3;
+                --text-muted: #8b949e;
+            }
+
+            body {
+                background: var(--bg);
+                color: var(--text);
+                font-family:
+                    -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica,
+                    Arial, sans-serif;
+                min-height: 100vh;
+                padding: 48px 24px;
+            }
+
+            header {
+                text-align: center;
+                margin-bottom: 48px;
+            }
+
+            header h1 {
+                font-size: 2rem;
+                font-weight: 700;
+                letter-spacing: -0.5px;
+            }
+
+            header p {
+                color: var(--text-muted);
+                margin-top: 8px;
+                font-size: 0.95rem;
+            }
+
+            #grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                gap: 16px;
+                max-width: 960px;
+                margin: 0 auto;
+            }
+
+            a.tool-card {
+                display: flex;
+                flex-direction: column;
+                background: var(--card-bg);
+                border: 1px solid var(--border);
+                border-radius: 10px;
+                padding: 24px;
+                text-decoration: none;
+                color: var(--text);
+                transition:
+                    transform 0.15s ease,
+                    border-color 0.15s ease,
+                    box-shadow 0.15s ease;
+                border-bottom: 3px solid var(--border);
+            }
+
+            a.tool-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+            }
+
+            .card-icon {
+                font-size: 2rem;
+                line-height: 1;
+                margin-bottom: 16px;
+            }
+
+            .card-name {
+                font-size: 1.1rem;
+                font-weight: 600;
+                margin-bottom: 8px;
+            }
+
+            .card-desc {
+                font-size: 0.875rem;
+                color: var(--text-muted);
+                line-height: 1.5;
+                flex: 1;
+            }
+
+            #search {
+                display: block;
+                margin: 20px auto 0;
+                width: 100%;
+                max-width: 400px;
+                padding: 10px 14px;
+                background: var(--card-bg);
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                color: var(--text);
+                font-size: 0.95rem;
+                outline: none;
+                transition: border-color 0.15s ease;
+            }
+            #search:focus {
+                border-color: #58a6ff;
+            }
+            #empty {
+                display: none;
+                grid-column: 1 / -1;
+                text-align: center;
+                color: var(--text-muted);
+                padding: 32px 0;
+                font-size: 0.95rem;
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <h1>🧰 Tools</h1>
+            <p>A collection of standalone browser tools.</p>
+            <input
+                id="search"
+                type="search"
+                placeholder="Search tools…"
+                autocomplete="off"
+            />
+        </header>
+        <div id="grid"></div>
+
+        <script src="tools.js"></script>
+        <script>
+            const grid = document.getElementById("grid");
+
+            const cards = TOOLS.map((tool) => {
+                const a = document.createElement("a");
+                a.className = "tool-card";
+                a.href = tool.file;
+                a.style.borderBottomColor = tool.accent;
+                a.innerHTML = `
+        <div class="card-icon">${tool.icon}</div>
+        <h2 class="card-name">${tool.name}</h2>
+        <p class="card-desc">${tool.description}</p>
+      `;
+                a.addEventListener("mouseenter", () => {
+                    a.style.borderColor = tool.accent;
+                });
+                a.addEventListener("mouseleave", () => {
+                    a.style.borderColor = "";
+                    a.style.borderBottomColor = tool.accent;
+                });
+                grid.appendChild(a);
+                return {
+                    el: a,
+                    searchText: (
+                        tool.name +
+                        " " +
+                        tool.description
+                    ).toLowerCase(),
+                };
+            });
+
+            const empty = document.createElement("div");
+            empty.id = "empty";
+            empty.textContent = "No tools match your search.";
+            grid.appendChild(empty);
+
+            document.getElementById("search").addEventListener("input", (e) => {
+                const query = e.target.value.toLowerCase().trim();
+                let anyVisible = false;
+                cards.forEach(({ el, searchText }) => {
+                    const visible = !query || searchText.includes(query);
+                    el.style.display = visible ? "" : "none";
+                    if (visible) anyVisible = true;
+                });
+                empty.style.display = anyVisible || !query ? "none" : "block";
+            });
+        </script>
+    </body>
+</html>
