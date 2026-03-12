@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
@@ -161,7 +161,6 @@
     }
     
     .btn-clear {
-      margin-left: auto;
       padding: 5px 14px;
       border-radius: 6px;
       border: 1px solid var(--border);
@@ -175,6 +174,26 @@
     .btn-clear:hover {
       border-color: #f85149;
       color: #f85149;
+    }
+    
+    .btn-export {
+      margin-left: auto;
+      padding: 5px 14px;
+      border-radius: 6px;
+      border: 1px solid var(--accent);
+      background: transparent;
+      color: var(--accent);
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    
+    .btn-export:hover {
+      background: var(--accent);
+      color: #ffffff;
     }
     
     main {
@@ -207,13 +226,6 @@
       font-weight: 600;
       font-size: 0.95rem;
       flex: 1;
-    }
-    
-    .cat-badge {
-      font-size: 0.7rem;
-      padding: 2px 8px;
-      border-radius: 10px;
-      font-weight: 600;
     }
     
     .cat-progress {
@@ -334,10 +346,88 @@
       margin-top: 12px;
     }
     
+    /* Export modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .modal-overlay.open {
+      display: flex;
+    }
+    
+    .modal {
+      background: var(--card);
+      border: 1px solid var(--accent);
+      border-radius: 12px;
+      padding: 24px;
+      max-width: 540px;
+      width: 90%;
+      text-align: center;
+    }
+    
+    .modal h2 {
+      color: var(--accent);
+      margin-bottom: 6px;
+      font-size: 1.1rem;
+    }
+    
+    .modal p {
+      color: var(--muted);
+      font-size: 0.8rem;
+      margin-bottom: 16px;
+    }
+    
+    .modal canvas {
+      border-radius: 8px;
+      max-width: 100%;
+      border: 1px solid var(--border);
+    }
+    
+    .modal-btns {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 16px;
+    }
+    
+    .modal-btns button {
+      padding: 8px 20px;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .btn-dl {
+      background: var(--accent);
+      border: none;
+      color: #ffffff;
+      font-weight: 600;
+    }
+    
+    .btn-dl:hover {
+      background: #d4922a;
+    }
+    
+    .btn-cancel {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    
+    .btn-cancel:hover {
+      border-color: #f85149;
+      color: #f85149;
+    }
+    
     @media (max-width: 600px) {
-      header,
-      main,
-      .toolbar {
+      header, main, .toolbar {
         padding-left: 12px;
         padding-right: 12px;
       }
@@ -376,21 +466,27 @@
 </header>
 
 <div class="toolbar">
-  <input
-      type="text"
-      id="search"
-      placeholder="🔍  Search quests…"
-      oninput="render()"
-  />
+  <input type="text" id="search" placeholder="🔍  Search quests…" oninput="render()">
   <div class="filter-btns" id="filters"></div>
   <button class="btn-clear" onclick="clearAll()">Reset All</button>
+  <button class="btn-export" onclick="openExport()">📸 Export Image</button>
 </div>
 
 <main id="main-content"></main>
-<footer>
-  Progress is saved in your browser. Spoiler-safe — quest titles only,
-  no descriptions.
-</footer>
+
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h2>📸 Week Notes Export</h2>
+    <p>A landscape snapshot of your current progress — ready to drop into your blog.</p>
+    <canvas id="export-canvas"></canvas>
+    <div class="modal-btns">
+      <button class="btn-dl" onclick="downloadImg()">↓ Download Image</button>
+      <button class="btn-cancel" onclick="closeExport()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<footer>Progress is saved in your browser. Spoiler-safe — quest titles only, no descriptions.</footer>
 
 <script>
   const CATEGORIES = [
@@ -761,8 +857,7 @@
     
     const mc = document.getElementById("main-content");
     if (!Object.keys(grouped).length) {
-      mc.innerHTML =
-          '<div class="empty-state">No quests found. Try a different search or filter.</div>';
+      mc.innerHTML = '<div class="empty-state">No quests found. Try a different search or filter.</div>';
       return;
     }
     
@@ -815,6 +910,251 @@
       mc.appendChild(sec);
     });
   }
+  
+  // ── Export ────────────────────────────────────────────────────────────────────
+  function openExport() {
+    drawExportCanvas();
+    document.getElementById('modal').classList.add('open');
+  }
+  
+  function closeExport() {
+    document.getElementById('modal').classList.remove('open');
+  }
+  
+  function drawExportCanvas() {
+    const W = 1200, PAD = 36, COL_GAP = 20, ROW_GAP = 16;
+    const COLS = 4;
+    const colW = (W - PAD * 2 - COL_GAP * (COLS - 1)) / COLS;
+    
+    // Pre-measure rows per category
+    const catData = CATEGORIES.map(cat => {
+      const total = cat.quests.length;
+      const doneN = cat.quests.filter(q => done.has(cat.key + '::' + q)).length;
+      return {cat, total, doneN, pct: total ? doneN / total : 0};
+    });
+    
+    // Layout into columns (simple bin-packing: fill columns evenly by item count)
+    // Each category card = header(52) + bar(24) + items*18 + padding(16)
+    const cardHeight = d => 52 + 24 + d.total * 18 + 20;
+    const columns = Array.from({length: COLS}, () => ({items: [], h: 0}));
+    catData.forEach(d => {
+      const shortest = columns.reduce((a, b) => a.h <= b.h ? a : b);
+      shortest.items.push(d);
+      shortest.h += cardHeight(d) + ROW_GAP;
+    });
+    
+    const maxColH = Math.max(...columns.map(c => c.h));
+    const HEADER_H = 80;
+    const H = HEADER_H + PAD + maxColH + PAD;
+    
+    const canvas = document.getElementById('export-canvas');
+    canvas.width = W;
+    canvas.height = H;
+    const ctx = canvas.getContext('2d');
+    
+    // Background
+    const bgGrad = ctx.createLinearGradient(0, 0, W, H);
+    bgGrad.addColorStop(0, '#1a0e00');
+    bgGrad.addColorStop(0.4, '#0d1117');
+    bgGrad.addColorStop(1, '#0d1117');
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, W, H);
+    
+    // Subtle grid texture
+    ctx.strokeStyle = 'rgba(192,130,58,0.04)';
+    ctx.lineWidth = 1;
+    for (let x = 0; x < W; x += 40) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, H);
+      ctx.stroke();
+    }
+    for (let y = 0; y < H; y += 40) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(W, y);
+      ctx.stroke();
+    }
+    
+    // Header bar
+    ctx.fillStyle = 'rgba(192,130,58,0.12)';
+    roundRect(ctx, 0, 0, W, HEADER_H, 0);
+    ctx.fill();
+    ctx.strokeStyle = '#c0823a';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(0, HEADER_H);
+    ctx.lineTo(W, HEADER_H);
+    ctx.stroke();
+    
+    // Title
+    ctx.fillStyle = '#c0823a';
+    ctx.font = 'bold 26px Segoe UI, sans-serif';
+    ctx.fillText('🏹 Horizon Forbidden West — Quest Tracker', PAD, 34);
+    
+    // Date
+    const dateStr = new Date().toLocaleDateString('en-GB', {day: 'numeric', month: 'long', year: 'numeric'});
+    ctx.fillStyle = '#8b949e';
+    ctx.font = '14px Segoe UI, sans-serif';
+    ctx.fillText(dateStr, PAD, 58);
+    
+    // Overall progress (right side of header)
+    const totalAll = ALL.length, doneAll = done.size;
+    const overallPct = totalAll ? doneAll / totalAll : 0;
+    const barW = 260, barH = 10;
+    const barX = W - PAD - barW;
+    
+    // Label
+    ctx.fillStyle = '#8b949e';
+    ctx.font = '12px Segoe UI, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText('Overall Progress', W - PAD, 22);
+    
+    // Count + pct
+    ctx.fillStyle = '#c0823a';
+    ctx.font = 'bold 20px Segoe UI, sans-serif';
+    ctx.fillText(`${doneAll} / ${totalAll}  (${Math.round(overallPct * 100)}%)`, W - PAD, 46);
+    ctx.textAlign = 'left';
+    
+    // Progress bar — sits below the text with clear spacing
+    const barY = 54;
+    ctx.fillStyle = '#30363d';
+    roundRect(ctx, barX, barY, barW, barH, 5);
+    ctx.fill();
+    if (overallPct > 0) {
+      const grad = ctx.createLinearGradient(barX, 0, barX + barW, 0);
+      grad.addColorStop(0, '#c0823a');
+      grad.addColorStop(1, '#f0a040');
+      ctx.fillStyle = grad;
+      roundRect(ctx, barX, barY, barW * overallPct, barH, 5);
+      ctx.fill();
+    }
+    
+    // Draw category cards
+    let colXs = columns.map((_, i) => PAD + i * (colW + COL_GAP));
+    let colYs = columns.map(() => HEADER_H + PAD);
+    
+    columns.forEach((col, ci) => {
+      let y = colYs[ci];
+      col.items.forEach(d => {
+        const ch = cardHeight(d);
+        drawCategoryCard(ctx, colXs[ci], y, colW, ch, d);
+        y += ch + ROW_GAP;
+      });
+    });
+    
+    
+  }
+  
+  function drawCategoryCard(ctx, x, y, w, h, {cat, total, doneN, pct}) {
+    // Card background
+    ctx.fillStyle = '#161b22';
+    roundRect(ctx, x, y, w, h, 8);
+    ctx.fill();
+    ctx.strokeStyle = '#30363d';
+    ctx.lineWidth = 1;
+    roundRect(ctx, x, y, w, h, 8);
+    ctx.stroke();
+    
+    // Left accent strip
+    ctx.fillStyle = cat.color;
+    roundRect(ctx, x, y, 4, h, [8, 0, 0, 8]);
+    ctx.fill();
+    
+    // Icon + label
+    ctx.font = 'bold 13px Segoe UI, sans-serif';
+    ctx.fillStyle = cat.color;
+    ctx.fillText(`${cat.icon} ${cat.label}`, x + 14, y + 18);
+    
+    // Count
+    ctx.font = '11px Segoe UI, sans-serif';
+    ctx.fillStyle = '#8b949e';
+    ctx.textAlign = 'right';
+    ctx.fillText(`${doneN}/${total}`, x + w - 10, y + 18);
+    ctx.textAlign = 'left';
+    
+    // Progress bar
+    const bx = x + 14, by = y + 26, bw = w - 24, bh = 7;
+    ctx.fillStyle = '#30363d';
+    roundRect(ctx, bx, by, bw, bh, 4);
+    ctx.fill();
+    if (pct > 0) {
+      const g = ctx.createLinearGradient(bx, 0, bx + bw, 0);
+      g.addColorStop(0, cat.color);
+      g.addColorStop(1, lighten(cat.color, 30));
+      ctx.fillStyle = g;
+      roundRect(ctx, bx, by, bw * pct, bh, 4);
+      ctx.fill();
+    }
+    
+    // Quest items
+    const itemStartY = y + 52;
+    cat.quests.forEach((q, i) => {
+      const isDone = done.has(cat.key + '::' + q);
+      const iy = itemStartY + i * 18;
+      
+      // Checkbox
+      ctx.strokeStyle = isDone ? '#2ea043' : '#30363d';
+      ctx.lineWidth = 1.5;
+      ctx.fillStyle = isDone ? '#2ea043' : 'transparent';
+      roundRect(ctx, x + 14, iy - 10, 11, 11, 2);
+      ctx.fill();
+      ctx.stroke();
+      if (isDone) {
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 8px Segoe UI,sans-serif';
+        ctx.fillText('✓', x + 15.5, iy - 1);
+      }
+      
+      // Quest name
+      ctx.font = isDone ? '11px Segoe UI, sans-serif' : '11px Segoe UI, sans-serif';
+      ctx.fillStyle = isDone ? '#4a5568' : '#c9d1d9';
+      const maxW = w - 40;
+      let name = q;
+      ctx.font = '11px Segoe UI, sans-serif';
+      while (ctx.measureText(name).width > maxW && name.length > 10) name = name.slice(0, -1);
+      if (name !== q) name = name.slice(0, -1) + '…';
+      ctx.fillText(name, x + 30, iy);
+    });
+  }
+  
+  function lighten(hex, amt) {
+    const n = parseInt(hex.slice(1), 16);
+    const r = Math.min(255, ((n >> 16) & 0xff) + amt);
+    const g = Math.min(255, ((n >> 8) & 0xff) + amt);
+    const b = Math.min(255, (n & 0xff) + amt);
+    return `rgb(${r},${g},${b})`;
+  }
+  
+  function roundRect(ctx, x, y, w, h, r) {
+    if (typeof r === 'number') r = [r, r, r, r];
+    const [tl, tr, br, bl] = r;
+    ctx.beginPath();
+    ctx.moveTo(x + tl, y);
+    ctx.lineTo(x + w - tr, y);
+    ctx.arcTo(x + w, y, x + w, y + tr, tr);
+    ctx.lineTo(x + w, y + h - br);
+    ctx.arcTo(x + w, y + h, x + w - br, y + h, br);
+    ctx.lineTo(x + bl, y + h);
+    ctx.arcTo(x, y + h, x, y + h - bl, bl);
+    ctx.lineTo(x, y + tl);
+    ctx.arcTo(x, y, x + tl, y, tl);
+    ctx.closePath();
+  }
+  
+  function downloadImg() {
+    const canvas = document.getElementById('export-canvas');
+    const date = new Date().toISOString().slice(0, 10);
+    const a = document.createElement('a');
+    a.download = `hfw-progress-${date}.png`;
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+  }
+  
+  // Close modal on overlay click
+  document.getElementById('modal').addEventListener('click', e => {
+    if (e.target === e.currentTarget) closeExport();
+  });
   
   render();
 </script>
