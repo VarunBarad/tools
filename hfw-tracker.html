@@ -1,786 +1,822 @@
 <!doctype html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>HFW Quest Tracker</title>
-        <link
-            rel="icon"
-            href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏹</text></svg>"
-        />
-        <style>
-            :root {
-                --bg: #0d1117;
-                --card: #161b22;
-                --border: #30363d;
-                --accent: #c0823a;
-                --done: #2ea043;
-                --text: #e6edf3;
-                --muted: #8b949e;
-            }
-            * {
-                box-sizing: border-box;
-                margin: 0;
-                padding: 0;
-            }
-            body {
-                background: var(--bg);
-                color: var(--text);
-                font-family: "Segoe UI", sans-serif;
-                min-height: 100vh;
-            }
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>HFW Quest Tracker</title>
+  <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏹</text></svg>"
+  />
+  <style>
+    :root {
+      --bg: #0d1117;
+      --card: #161b22;
+      --border: #30363d;
+      --accent: #c0823a;
+      --done: #2ea043;
+      --text: #e6edf3;
+      --muted: #8b949e;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Segoe UI", sans-serif;
+      min-height: 100vh;
+    }
+    
+    header {
+      background: linear-gradient(135deg, #1a0e00 0%, #0d1117 60%);
+      border-bottom: 1px solid var(--accent);
+      padding: 18px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    
+    header h1 {
+      font-size: 1.3rem;
+      color: var(--accent);
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .stats-bar {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    
+    .stat {
+      text-align: center;
+    }
+    
+    .stat .n {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    
+    .stat .l {
+      font-size: 0.65rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    .progress-wrap {
+      width: 180px;
+    }
+    
+    .progress-label {
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+    }
+    
+    .progress-bar {
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), #f0a040);
+      border-radius: 3px;
+      transition: width 0.4s;
+    }
+    
+    .toolbar {
+      padding: 12px 24px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    
+    .toolbar input {
+      flex: 1;
+      min-width: 160px;
+      padding: 7px 12px;
+      border-radius: 6px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 0.85rem;
+    }
+    
+    .toolbar input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    
+    .filter-btns {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    
+    .fbtn {
+      padding: 5px 12px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .fbtn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    
+    .fbtn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #ffffff;
+      font-weight: 600;
+    }
+    
+    .btn-clear {
+      margin-left: auto;
+      padding: 5px 14px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .btn-clear:hover {
+      border-color: #f85149;
+      color: #f85149;
+    }
+    
+    main {
+      padding: 20px 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .category-section {
+      margin-bottom: 28px;
+    }
+    
+    .category-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      padding: 10px 14px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px 8px 0 0;
+      user-select: none;
+    }
+    
+    .category-header:hover {
+      border-color: var(--accent);
+    }
+    
+    .cat-title {
+      font-weight: 600;
+      font-size: 0.95rem;
+      flex: 1;
+    }
+    
+    .cat-badge {
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: 600;
+    }
+    
+    .cat-progress {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+    
+    .collapse-icon {
+      color: var(--muted);
+      transition: transform 0.25s;
+      font-size: 0.8rem;
+    }
+    
+    .collapsed .collapse-icon {
+      transform: rotate(-90deg);
+    }
+    
+    .collapsed + .quest-grid {
+      display: none;
+    }
+    
+    .type-tag {
+      font-size: 0.6rem;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      flex-shrink: 0;
+    }
+    
+    .quest-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 8px 8px;
+      overflow: hidden;
+    }
+    
+    .quest-item {
+      background: var(--card);
+      padding: 10px 14px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    
+    .quest-item:hover {
+      background: #1e2530;
+    }
+    
+    .quest-item.done {
+      background: #0d1f0e;
+    }
+    
+    .quest-item.done:hover {
+      background: #112214;
+    }
+    
+    .checkbox {
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+      border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+      transition: all 0.2s;
+    }
+    
+    .done .checkbox {
+      background: var(--done);
+      border-color: var(--done);
+    }
+    
+    .checkmark {
+      display: none;
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    
+    .done .checkmark {
+      display: block;
+    }
+    
+    .quest-name {
+      font-size: 0.85rem;
+      font-weight: 500;
+      line-height: 1.3;
+    }
+    
+    .done .quest-name {
+      color: var(--muted);
+      text-decoration: line-through;
+    }
+    
+    .empty-state {
+      text-align: center;
+      color: var(--muted);
+      padding: 48px;
+      font-size: 0.9rem;
+    }
+    
+    footer {
+      text-align: center;
+      padding: 20px;
+      color: var(--muted);
+      font-size: 0.72rem;
+      border-top: 1px solid var(--border);
+      margin-top: 12px;
+    }
+    
+    @media (max-width: 600px) {
+      header,
+      main,
+      .toolbar {
+        padding-left: 12px;
+        padding-right: 12px;
+      }
+      
+      .progress-wrap {
+        width: 140px;
+      }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <h1>🏹 Horizon Forbidden West — Quest Tracker</h1>
+  <div class="stats-bar">
+    <div class="stat">
+      <div class="n" id="s-done">0</div>
+      <div class="l">Done</div>
+    </div>
+    <div class="stat">
+      <div class="n" id="s-total">0</div>
+      <div class="l">Total</div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-label">
+        <span>Overall Progress</span><span id="s-pct">0%</span>
+      </div>
+      <div class="progress-bar">
+        <div
+            class="progress-fill"
+            id="s-bar"
+            style="width: 0%"
+        ></div>
+      </div>
+    </div>
+  </div>
+</header>
 
-            header {
-                background: linear-gradient(135deg, #1a0e00 0%, #0d1117 60%);
-                border-bottom: 1px solid var(--accent);
-                padding: 18px 24px;
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                flex-wrap: wrap;
-                gap: 12px;
-            }
-            header h1 {
-                font-size: 1.3rem;
-                color: var(--accent);
-                letter-spacing: 1px;
-                display: flex;
-                align-items: center;
-                gap: 10px;
-            }
+<div class="toolbar">
+  <input
+      type="text"
+      id="search"
+      placeholder="🔍  Search quests…"
+      oninput="render()"
+  />
+  <div class="filter-btns" id="filters"></div>
+  <button class="btn-clear" onclick="clearAll()">Reset All</button>
+</div>
 
-            .stats-bar {
-                display: flex;
-                gap: 16px;
-                flex-wrap: wrap;
-                align-items: center;
-            }
-            .stat {
-                text-align: center;
-            }
-            .stat .n {
-                font-size: 1.4rem;
-                font-weight: 700;
-                color: var(--accent);
-            }
-            .stat .l {
-                font-size: 0.65rem;
-                color: var(--muted);
-                text-transform: uppercase;
-                letter-spacing: 1px;
-            }
+<main id="main-content"></main>
+<footer>
+  Progress is saved in your browser. Spoiler-safe — quest titles only,
+  no descriptions.
+</footer>
 
-            .progress-wrap {
-                width: 180px;
-            }
-            .progress-label {
-                font-size: 0.7rem;
-                color: var(--muted);
-                margin-bottom: 4px;
-                display: flex;
-                justify-content: space-between;
-            }
-            .progress-bar {
-                height: 6px;
-                background: var(--border);
-                border-radius: 3px;
-                overflow: hidden;
-            }
-            .progress-fill {
-                height: 100%;
-                background: linear-gradient(90deg, var(--accent), #f0a040);
-                border-radius: 3px;
-                transition: width 0.4s;
-            }
-
-            .toolbar {
-                padding: 12px 24px;
-                display: flex;
-                gap: 10px;
-                flex-wrap: wrap;
-                align-items: center;
-                background: var(--card);
-                border-bottom: 1px solid var(--border);
-                position: sticky;
-                top: 0;
-                z-index: 100;
-            }
-            .toolbar input {
-                flex: 1;
-                min-width: 160px;
-                padding: 7px 12px;
-                border-radius: 6px;
-                background: var(--bg);
-                border: 1px solid var(--border);
-                color: var(--text);
-                font-size: 0.85rem;
-            }
-            .toolbar input:focus {
-                outline: none;
-                border-color: var(--accent);
-            }
-
-            .filter-btns {
-                display: flex;
-                gap: 6px;
-                flex-wrap: wrap;
-            }
-            .fbtn {
-                padding: 5px 12px;
-                border-radius: 20px;
-                border: 1px solid var(--border);
-                background: transparent;
-                color: var(--muted);
-                font-size: 0.75rem;
-                cursor: pointer;
-                transition: all 0.2s;
-            }
-            .fbtn:hover {
-                border-color: var(--accent);
-                color: var(--accent);
-            }
-            .fbtn.active {
-                background: var(--accent);
-                border-color: var(--accent);
-                color: #fff;
-                font-weight: 600;
-            }
-
-            .btn-clear {
-                margin-left: auto;
-                padding: 5px 14px;
-                border-radius: 6px;
-                border: 1px solid var(--border);
-                background: transparent;
-                color: var(--muted);
-                font-size: 0.75rem;
-                cursor: pointer;
-                transition: all 0.2s;
-            }
-            .btn-clear:hover {
-                border-color: #f85149;
-                color: #f85149;
-            }
-
-            main {
-                padding: 20px 24px;
-                max-width: 1200px;
-                margin: 0 auto;
-            }
-
-            .category-section {
-                margin-bottom: 28px;
-            }
-            .category-header {
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                cursor: pointer;
-                padding: 10px 14px;
-                background: var(--card);
-                border: 1px solid var(--border);
-                border-radius: 8px 8px 0 0;
-                user-select: none;
-            }
-            .category-header:hover {
-                border-color: var(--accent);
-            }
-            .cat-title {
-                font-weight: 600;
-                font-size: 0.95rem;
-                flex: 1;
-            }
-            .cat-badge {
-                font-size: 0.7rem;
-                padding: 2px 8px;
-                border-radius: 10px;
-                font-weight: 600;
-            }
-            .cat-progress {
-                font-size: 0.75rem;
-                color: var(--muted);
-            }
-            .collapse-icon {
-                color: var(--muted);
-                transition: transform 0.25s;
-                font-size: 0.8rem;
-            }
-            .collapsed .collapse-icon {
-                transform: rotate(-90deg);
-            }
-            .collapsed + .quest-grid {
-                display: none;
-            }
-
-            .type-tag {
-                font-size: 0.6rem;
-                font-weight: 700;
-                padding: 1px 6px;
-                border-radius: 10px;
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
-                flex-shrink: 0;
-            }
-
-            .quest-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-                gap: 1px;
-                background: var(--border);
-                border: 1px solid var(--border);
-                border-top: none;
-                border-radius: 0 0 8px 8px;
-                overflow: hidden;
-            }
-            .quest-item {
-                background: var(--card);
-                padding: 10px 14px;
-                display: flex;
-                align-items: flex-start;
-                gap: 10px;
-                cursor: pointer;
-                transition: background 0.15s;
-            }
-            .quest-item:hover {
-                background: #1e2530;
-            }
-            .quest-item.done {
-                background: #0d1f0e;
-            }
-            .quest-item.done:hover {
-                background: #112214;
-            }
-
-            .checkbox {
-                width: 18px;
-                height: 18px;
-                border-radius: 4px;
-                border: 2px solid var(--border);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                flex-shrink: 0;
-                margin-top: 1px;
-                transition: all 0.2s;
-            }
-            .done .checkbox {
-                background: var(--done);
-                border-color: var(--done);
-            }
-            .checkmark {
-                display: none;
-                color: #fff;
-                font-size: 11px;
-                font-weight: 700;
-            }
-            .done .checkmark {
-                display: block;
-            }
-
-            .quest-name {
-                font-size: 0.85rem;
-                font-weight: 500;
-                line-height: 1.3;
-            }
-            .done .quest-name {
-                color: var(--muted);
-                text-decoration: line-through;
-            }
-
-            .empty-state {
-                text-align: center;
-                color: var(--muted);
-                padding: 48px;
-                font-size: 0.9rem;
-            }
-            footer {
-                text-align: center;
-                padding: 20px;
-                color: var(--muted);
-                font-size: 0.72rem;
-                border-top: 1px solid var(--border);
-                margin-top: 12px;
-            }
-
-            @media (max-width: 600px) {
-                header,
-                main,
-                .toolbar {
-                    padding-left: 12px;
-                    padding-right: 12px;
-                }
-                .progress-wrap {
-                    width: 140px;
-                }
-            }
-        </style>
-    </head>
-    <body>
-        <header>
-            <h1>🏹 Horizon Forbidden West — Quest Tracker</h1>
-            <div class="stats-bar">
-                <div class="stat">
-                    <div class="n" id="s-done">0</div>
-                    <div class="l">Done</div>
-                </div>
-                <div class="stat">
-                    <div class="n" id="s-total">0</div>
-                    <div class="l">Total</div>
-                </div>
-                <div class="progress-wrap">
-                    <div class="progress-label">
-                        <span>Overall Progress</span><span id="s-pct">0%</span>
-                    </div>
-                    <div class="progress-bar">
-                        <div
-                            class="progress-fill"
-                            id="s-bar"
-                            style="width: 0%"
-                        ></div>
-                    </div>
-                </div>
-            </div>
-        </header>
-
-        <div class="toolbar">
-            <input
-                type="text"
-                id="search"
-                placeholder="🔍  Search quests…"
-                oninput="render()"
-            />
-            <div class="filter-btns" id="filters"></div>
-            <button class="btn-clear" onclick="clearAll()">Reset All</button>
-        </div>
-
-        <main id="main-content"></main>
-        <footer>
-            Progress is saved in your browser. Spoiler-safe — quest titles only,
-            no descriptions.
-        </footer>
-
-        <script>
-            const CATEGORIES = [
-                {
-                    key: "main",
-                    label: "Main Quests",
-                    icon: "🗺️",
-                    tag: "Main",
-                    color: "#d29922",
-                    bg: "#3b3017",
-                    quests: [
-                        "Reach for the Stars",
-                        "The Point of the Lance",
-                        "To the Brink",
-                        "The Embassy",
-                        "Death's Door",
-                        "The Dying Lands",
-                        "The Eye of the Earth",
-                        "The Broken Sky",
-                        "The Kulrut",
-                        "Cradle of Echoes",
-                        "The Sea of Sands",
-                        "Seeds of the Past",
-                        "Faro's Tomb",
-                        "GEMINI",
-                        "All That Remains",
-                        "The Wings of the Ten",
-                        "Singularity",
-                    ],
-                },
-                {
-                    key: "side",
-                    label: "Side Quests",
-                    icon: "📜",
-                    tag: "Side",
-                    color: "#3fb950",
-                    bg: "#1b2f1e",
-                    quests: [
-                        "Deep Trouble",
-                        "The Twilight Path",
-                        "The Bristlebacks",
-                        "Shadow from the Past",
-                        "Shadow in the West",
-                        "The Burning Blooms",
-                        "A Tribe Apart",
-                        "Drowned Hopes",
-                        "The Promontory",
-                        "The Roots that Bind",
-                        "The Second Verse",
-                        "What Was Lost",
-                        "Forbidden Legacy",
-                        "Thirst for the Hunt",
-                        "The Wound in the Sand",
-                        "The Gate of the Vanquished",
-                        "Need to Know",
-                        "A Soldier's March",
-                        "Signal Spike",
-                        "Breaking Even",
-                        "The Deluge",
-                        "Lofty Ambitions",
-                        "Boom or Bust",
-                        "Blood for Blood",
-                        "The Valley of the Fallen",
-                        "In the Fog",
-                        "The Blood Choke",
-                        "The Way Home",
-                    ],
-                },
-                {
-                    key: "errand",
-                    label: "Errands",
-                    icon: "📌",
-                    tag: "Errand",
-                    color: "#79c0ff",
-                    bg: "#1e2040",
-                    quests: [
-                        "Learning Machine Strike",
-                        "The Enduring",
-                        "A Dash of Courage",
-                        "A Bigger Boom",
-                        "Signals of the Sun",
-                        "The Oldgrowth",
-                        "Shining Example",
-                        "Burden of Command",
-                        "The Music in Metal",
-                        "Broken Locks",
-                        "The Taste of Victory",
-                        "Sons of Prometheus Data",
-                        "Nights of Lights",
-                        "In Bloom",
-                        "Supply Drop",
-                        "Call and Response",
-                        "First to Fly",
-                        "A Hunt to Remember",
-                        "Tides of Justice",
-                        "The Souvenir",
-                    ],
-                },
-                {
-                    key: "rebel-camp",
-                    label: "Rebel Camps",
-                    icon: "🔴",
-                    tag: "Rebel Camp",
-                    color: "#f85149",
-                    bg: "#2d1b1b",
-                    quests: [
-                        "Eastern Lie",
-                        "The Hive",
-                        "Breached Rock",
-                        "Devil's Grasp",
-                        "Fenrise",
-                        "First Forge",
-                    ],
-                },
-                {
-                    key: "rebel-outpost",
-                    label: "Rebel Outposts",
-                    icon: "🏕️",
-                    tag: "Rebel Outpost",
-                    color: "#ff9a96",
-                    bg: "#2d1b1b",
-                    quests: [
-                        "The Deadfalls",
-                        "Jagged Deep",
-                        "Plainsong",
-                        "The High Turning",
-                        "The Dry Yearn",
-                        "Stillsands North",
-                        "Stillsands South",
-                        "Stillsands West",
-                        "Shining Wastes North",
-                        "Runner's Wild",
-                        "Shining Wastes South",
-                        "Raintrace East",
-                        "The Graypeak",
-                        "Raintrace North",
-                        "Raintrace West",
-                        "The Stand of the Sentinels",
-                        "Bonewhite Tear",
-                    ],
-                },
-                {
-                    key: "salvage",
-                    label: "Salvage Contracts",
-                    icon: "🔧",
-                    tag: "Salvage",
-                    color: "#39d0d8",
-                    bg: "#1e2d2d",
-                    quests: [
-                        "Keruf's Salvage Unlimited (Overarching)",
-                        "No Man's Land – Contract 1",
-                        "No Man's Land – Contract 2",
-                        "No Man's Land – Contract 3",
-                        "No Man's Land – Contract 4",
-                        "The Greenswell – Contract 1",
-                        "The Greenswell – Contract 2",
-                        "The Greenswell – Contract 3",
-                        "The Greenswell – Contract 4",
-                        "The Stillsands – Contract 1",
-                        "The Stillsands – Contract 2",
-                        "The Stillsands – Contract 3",
-                        "The Stillsands – Contract 4",
-                        "The Raintrace – Contract 1",
-                        "The Raintrace – Contract 2",
-                        "The Raintrace – Contract 3",
-                        "The Raintrace – Contract 4",
-                    ],
-                },
-                {
-                    key: "cauldron",
-                    label: "Cauldrons",
-                    icon: "🔩",
-                    tag: "Cauldron",
-                    color: "#ffa657",
-                    bg: "#2d1f0a",
-                    quests: [
-                        "Cauldron: TAU",
-                        "Cauldron: MU",
-                        "Cauldron: IOTA",
-                        "Cauldron: CHI",
-                        "Cauldron: KAPPA",
-                        "Cauldron: GEMINI",
-                    ],
-                },
-                {
-                    key: "tallneck",
-                    label: "Tallnecks",
-                    icon: "🦒",
-                    tag: "Tallneck",
-                    color: "#a5d6ff",
-                    bg: "#0d2030",
-                    quests: [
-                        "Tallneck: Cinnabar Sands",
-                        "Tallneck: The Shining Wastes",
-                        "Tallneck: Salt Bite",
-                        "Tallneck: The Stillsands",
-                        "Tallneck: The Stand of the Sentinels",
-                        "Tallneck: Landfall",
-                    ],
-                },
-                {
-                    key: "relic-ruin",
-                    label: "Relic Ruins",
-                    icon: "🏛️",
-                    tag: "Relic Ruin",
-                    color: "#c9a227",
-                    bg: "#28200a",
-                    quests: [
-                        "Relic Ruin: The Daunt",
-                        "Relic Ruin: No Man's Land",
-                        "Relic Ruin: Dry Yearn",
-                        "Relic Ruin: Restless Weald",
-                        "Relic Ruin: The Stillsands",
-                        "Relic Ruin: Runner's Wild",
-                        "Relic Ruin: The Long Coast",
-                        "Relic Ruin: Isle of Spires",
-                    ],
-                },
-                {
-                    key: "melee-pit",
-                    label: "Melee Pits",
-                    icon: "🥊",
-                    tag: "Melee Pit",
-                    color: "#ff7b72",
-                    bg: "#2d1018",
-                    quests: [
-                        "Melee Pit: Chainscrape",
-                        "Melee Pit: Scalding Spear",
-                        "Melee Pit: The Bulwark",
-                        "Melee Pit: Thornmarsh",
-                        "Melee Pit: Final",
-                    ],
-                },
-                {
-                    key: "hunting-ground",
-                    label: "Hunting Grounds",
-                    icon: "🎯",
-                    tag: "Hunting",
-                    color: "#56d364",
-                    bg: "#0f2318",
-                    quests: [
-                        "Hunting Ground: The Daunt – Trial 1",
-                        "Hunting Ground: The Daunt – Trial 2",
-                        "Hunting Ground: The Daunt – Trial 3",
-                        "Hunting Ground: Plainsong – Trial 1",
-                        "Hunting Ground: Plainsong – Trial 2",
-                        "Hunting Ground: Plainsong – Trial 3",
-                        "Hunting Ground: Sheerside Mountains – Trial 1",
-                        "Hunting Ground: Sheerside Mountains – Trial 2",
-                        "Hunting Ground: Sheerside Mountains – Trial 3",
-                        "Hunting Ground: The Raintrace – Trial 1",
-                        "Hunting Ground: The Raintrace – Trial 2",
-                        "Hunting Ground: The Raintrace – Trial 3",
-                    ],
-                },
-                {
-                    key: "gauntlet",
-                    label: "Gauntlet Runs",
-                    icon: "🏁",
-                    tag: "Gauntlet",
-                    color: "#d2a8ff",
-                    bg: "#1e1030",
-                    quests: [
-                        "Gauntlet Run: Dry Yearn",
-                        "Gauntlet Run: Cliffs of the Cry",
-                        "Gauntlet Run: Bonewhite Tear",
-                        "Gauntlet Run: The Stillsands",
-                    ],
-                },
-            ];
-
-            // Flatten all quests
-            const ALL = [];
-            CATEGORIES.forEach((cat) =>
-                cat.quests.forEach((q) =>
-                    ALL.push({ id: cat.key + "::" + q, name: q, key: cat.key }),
-                ),
-            );
-
-            // Filter buttons config
-            const FILTERS = [
-                { f: "all", label: "All" },
-                { f: "main", label: "🗺️ Main" },
-                { f: "side", label: "📜 Side" },
-                { f: "errand", label: "📌 Errands" },
-                { f: "rebel-camp", label: "🔴 Rebel Camps" },
-                { f: "rebel-outpost", label: "🏕️ Outposts" },
-                { f: "salvage", label: "🔧 Salvage" },
-                { f: "cauldron", label: "🔩 Cauldrons" },
-                { f: "tallneck", label: "🦒 Tallnecks" },
-                { f: "relic-ruin", label: "🏛️ Relic Ruins" },
-                { f: "melee-pit", label: "🥊 Melee Pits" },
-                { f: "hunting-ground", label: "🎯 Hunting" },
-                { f: "gauntlet", label: "🏁 Gauntlet" },
-                { f: "incomplete", label: "⬜ Incomplete" },
-                { f: "complete", label: "✅ Complete" },
-            ];
-
-            // Build filter buttons
-            const fb = document.getElementById("filters");
-            FILTERS.forEach(({ f, label }) => {
-                const b = document.createElement("button");
-                b.className = "fbtn" + (f === "all" ? " active" : "");
-                b.dataset.f = f;
-                b.textContent = label;
-                b.onclick = () => setFilter(f);
-                fb.appendChild(b);
-            });
-
-            let done = new Set(
-                JSON.parse(localStorage.getItem("hfw_done") || "[]"),
-            );
-            let filter = "all";
-
-            function save() {
-                localStorage.setItem("hfw_done", JSON.stringify([...done]));
-            }
-            function toggle(id) {
-                done.has(id) ? done.delete(id) : done.add(id);
-                save();
-                render();
-            }
-            function clearAll() {
-                if (confirm("Reset ALL progress?")) {
-                    done.clear();
-                    save();
-                    render();
-                }
-            }
-            function setFilter(f) {
-                filter = f;
-                document
-                    .querySelectorAll(".fbtn")
-                    .forEach((b) =>
-                        b.classList.toggle("active", b.dataset.f === f),
-                    );
-                render();
-            }
-
-            function render() {
-                const q = document.getElementById("search").value.toLowerCase();
-
-                const visible = ALL.filter((item) => {
-                    if (q && !item.name.toLowerCase().includes(q)) return false;
-                    if (filter === "incomplete") return !done.has(item.id);
-                    if (filter === "complete") return done.has(item.id);
-                    if (filter !== "all") return item.key === filter;
-                    return true;
-                });
-
-                // Stats
-                const pct = ALL.length
-                    ? Math.round((done.size / ALL.length) * 100)
-                    : 0;
-                document.getElementById("s-done").textContent = done.size;
-                document.getElementById("s-total").textContent = ALL.length;
-                document.getElementById("s-pct").textContent = pct + "%";
-                document.getElementById("s-bar").style.width = pct + "%";
-
-                // Group by category key, preserving CATEGORIES order
-                const grouped = {};
-                visible.forEach((item) => {
-                    (grouped[item.key] = grouped[item.key] || []).push(item);
-                });
-
-                const mc = document.getElementById("main-content");
-                if (!Object.keys(grouped).length) {
-                    mc.innerHTML =
-                        '<div class="empty-state">No quests found. Try a different search or filter.</div>';
-                    return;
-                }
-
-                mc.innerHTML = "";
-                const collapsed = JSON.parse(
-                    sessionStorage.getItem("hfw_col") || "{}",
-                );
-
-                CATEGORIES.forEach((cat) => {
-                    const items = grouped[cat.key];
-                    if (!items) return;
-
-                    const catDone = items.filter((i) => done.has(i.id)).length;
-                    const isCollapsed = collapsed[cat.key];
-
-                    const sec = document.createElement("div");
-                    sec.className = "category-section";
-
-                    const hdr = document.createElement("div");
-                    hdr.className =
-                        "category-header" + (isCollapsed ? " collapsed" : "");
-                    hdr.innerHTML = `
+<script>
+  const CATEGORIES = [
+    {
+      key: "main",
+      label: "Main Quests",
+      icon: "🗺️",
+      tag: "Main",
+      color: "#d29922",
+      bg: "#3b3017",
+      quests: [
+        "Reach for the Stars",
+        "The Point of the Lance",
+        "To the Brink",
+        "The Embassy",
+        "Death's Door",
+        "The Dying Lands",
+        "The Eye of the Earth",
+        "The Broken Sky",
+        "The Kulrut",
+        "Cradle of Echoes",
+        "The Sea of Sands",
+        "Seeds of the Past",
+        "Faro's Tomb",
+        "GEMINI",
+        "All That Remains",
+        "The Wings of the Ten",
+        "Singularity",
+      ],
+    },
+    {
+      key: "side",
+      label: "Side Quests",
+      icon: "📜",
+      tag: "Side",
+      color: "#3fb950",
+      bg: "#1b2f1e",
+      quests: [
+        "Deep Trouble",
+        "The Twilight Path",
+        "The Bristlebacks",
+        "Shadow from the Past",
+        "Shadow in the West",
+        "The Burning Blooms",
+        "A Tribe Apart",
+        "Drowned Hopes",
+        "The Promontory",
+        "The Roots that Bind",
+        "The Second Verse",
+        "What Was Lost",
+        "Forbidden Legacy",
+        "Thirst for the Hunt",
+        "The Wound in the Sand",
+        "The Gate of the Vanquished",
+        "Need to Know",
+        "A Soldier's March",
+        "Signal Spike",
+        "Breaking Even",
+        "The Deluge",
+        "Lofty Ambitions",
+        "Boom or Bust",
+        "Blood for Blood",
+        "The Valley of the Fallen",
+        "In the Fog",
+        "The Blood Choke",
+        "The Way Home",
+      ],
+    },
+    {
+      key: "errand",
+      label: "Errands",
+      icon: "📌",
+      tag: "Errand",
+      color: "#79c0ff",
+      bg: "#1e2040",
+      quests: [
+        "Learning Machine Strike",
+        "The Enduring",
+        "A Dash of Courage",
+        "A Bigger Boom",
+        "Signals of the Sun",
+        "The Oldgrowth",
+        "Shining Example",
+        "Burden of Command",
+        "The Music in Metal",
+        "Broken Locks",
+        "The Taste of Victory",
+        "Sons of Prometheus Data",
+        "Nights of Lights",
+        "In Bloom",
+        "Supply Drop",
+        "Call and Response",
+        "First to Fly",
+        "A Hunt to Remember",
+        "Tides of Justice",
+        "The Souvenir",
+      ],
+    },
+    {
+      key: "rebel-camp",
+      label: "Rebel Camps",
+      icon: "🔴",
+      tag: "Rebel Camp",
+      color: "#f85149",
+      bg: "#2d1b1b",
+      quests: [
+        "Eastern Lie",
+        "The Hive",
+        "Breached Rock",
+        "Devil's Grasp",
+        "Fenrise",
+        "First Forge",
+      ],
+    },
+    {
+      key: "rebel-outpost",
+      label: "Rebel Outposts",
+      icon: "🏕️",
+      tag: "Rebel Outpost",
+      color: "#ff9a96",
+      bg: "#2d1b1b",
+      quests: [
+        "The Deadfalls",
+        "Jagged Deep",
+        "Plainsong",
+        "The High Turning",
+        "The Dry Yearn",
+        "Stillsands North",
+        "Stillsands South",
+        "Stillsands West",
+        "Shining Wastes North",
+        "Runner's Wild",
+        "Shining Wastes South",
+        "Raintrace East",
+        "The Graypeak",
+        "Raintrace North",
+        "Raintrace West",
+        "The Stand of the Sentinels",
+        "Bonewhite Tear",
+      ],
+    },
+    {
+      key: "salvage",
+      label: "Salvage Contracts",
+      icon: "🔧",
+      tag: "Salvage",
+      color: "#39d0d8",
+      bg: "#1e2d2d",
+      quests: [
+        "Keruf's Salvage Unlimited (Overarching)",
+        "No Man's Land – Contract 1",
+        "No Man's Land – Contract 2",
+        "No Man's Land – Contract 3",
+        "No Man's Land – Contract 4",
+        "The Greenswell – Contract 1",
+        "The Greenswell – Contract 2",
+        "The Greenswell – Contract 3",
+        "The Greenswell – Contract 4",
+        "The Stillsands – Contract 1",
+        "The Stillsands – Contract 2",
+        "The Stillsands – Contract 3",
+        "The Stillsands – Contract 4",
+        "The Raintrace – Contract 1",
+        "The Raintrace – Contract 2",
+        "The Raintrace – Contract 3",
+        "The Raintrace – Contract 4",
+      ],
+    },
+    {
+      key: "cauldron",
+      label: "Cauldrons",
+      icon: "🔩",
+      tag: "Cauldron",
+      color: "#ffa657",
+      bg: "#2d1f0a",
+      quests: [
+        "Cauldron: TAU",
+        "Cauldron: MU",
+        "Cauldron: IOTA",
+        "Cauldron: CHI",
+        "Cauldron: KAPPA",
+        "Cauldron: GEMINI",
+      ],
+    },
+    {
+      key: "tallneck",
+      label: "Tallnecks",
+      icon: "🦒",
+      tag: "Tallneck",
+      color: "#a5d6ff",
+      bg: "#0d2030",
+      quests: [
+        "Tallneck: Cinnabar Sands",
+        "Tallneck: The Shining Wastes",
+        "Tallneck: Salt Bite",
+        "Tallneck: The Stillsands",
+        "Tallneck: The Stand of the Sentinels",
+        "Tallneck: Landfall",
+      ],
+    },
+    {
+      key: "relic-ruin",
+      label: "Relic Ruins",
+      icon: "🏛️",
+      tag: "Relic Ruin",
+      color: "#c9a227",
+      bg: "#28200a",
+      quests: [
+        "Relic Ruin: The Daunt",
+        "Relic Ruin: No Man's Land",
+        "Relic Ruin: Dry Yearn",
+        "Relic Ruin: Restless Weald",
+        "Relic Ruin: The Stillsands",
+        "Relic Ruin: Runner's Wild",
+        "Relic Ruin: The Long Coast",
+        "Relic Ruin: Isle of Spires",
+      ],
+    },
+    {
+      key: "melee-pit",
+      label: "Melee Pits",
+      icon: "🥊",
+      tag: "Melee Pit",
+      color: "#ff7b72",
+      bg: "#2d1018",
+      quests: [
+        "Melee Pit: Chainscrape",
+        "Melee Pit: Scalding Spear",
+        "Melee Pit: The Bulwark",
+        "Melee Pit: Thornmarsh",
+        "Melee Pit: Final",
+      ],
+    },
+    {
+      key: "hunting-ground",
+      label: "Hunting Grounds",
+      icon: "🎯",
+      tag: "Hunting",
+      color: "#56d364",
+      bg: "#0f2318",
+      quests: [
+        "Hunting Ground: The Daunt – Trial 1",
+        "Hunting Ground: The Daunt – Trial 2",
+        "Hunting Ground: The Daunt – Trial 3",
+        "Hunting Ground: Plainsong – Trial 1",
+        "Hunting Ground: Plainsong – Trial 2",
+        "Hunting Ground: Plainsong – Trial 3",
+        "Hunting Ground: Sheerside Mountains – Trial 1",
+        "Hunting Ground: Sheerside Mountains – Trial 2",
+        "Hunting Ground: Sheerside Mountains – Trial 3",
+        "Hunting Ground: The Raintrace – Trial 1",
+        "Hunting Ground: The Raintrace – Trial 2",
+        "Hunting Ground: The Raintrace – Trial 3",
+      ],
+    },
+    {
+      key: "gauntlet",
+      label: "Gauntlet Runs",
+      icon: "🏁",
+      tag: "Gauntlet",
+      color: "#d2a8ff",
+      bg: "#1e1030",
+      quests: [
+        "Gauntlet Run: Dry Yearn",
+        "Gauntlet Run: Cliffs of the Cry",
+        "Gauntlet Run: Bonewhite Tear",
+        "Gauntlet Run: The Stillsands",
+      ],
+    },
+  ];
+  
+  // Flatten all quests
+  const ALL = [];
+  CATEGORIES.forEach((cat) =>
+      cat.quests.forEach((q) =>
+          ALL.push({id: cat.key + "::" + q, name: q, key: cat.key}),
+      ),
+  );
+  
+  // Filter buttons config
+  const FILTERS = [
+    {f: "all", label: "All"},
+    {f: "main", label: "🗺️ Main"},
+    {f: "side", label: "📜 Side"},
+    {f: "errand", label: "📌 Errands"},
+    {f: "rebel-camp", label: "🔴 Rebel Camps"},
+    {f: "rebel-outpost", label: "🏕️ Outposts"},
+    {f: "salvage", label: "🔧 Salvage"},
+    {f: "cauldron", label: "🔩 Cauldrons"},
+    {f: "tallneck", label: "🦒 Tallnecks"},
+    {f: "relic-ruin", label: "🏛️ Relic Ruins"},
+    {f: "melee-pit", label: "🥊 Melee Pits"},
+    {f: "hunting-ground", label: "🎯 Hunting"},
+    {f: "gauntlet", label: "🏁 Gauntlet"},
+    {f: "incomplete", label: "⬜ Incomplete"},
+    {f: "complete", label: "✅ Complete"},
+  ];
+  
+  // Build filter buttons
+  const fb = document.getElementById("filters");
+  FILTERS.forEach(({f, label}) => {
+    const b = document.createElement("button");
+    b.className = "fbtn" + (f === "all" ? " active" : "");
+    b.dataset.f = f;
+    b.textContent = label;
+    b.onclick = () => setFilter(f);
+    fb.appendChild(b);
+  });
+  
+  let done = new Set(
+      JSON.parse(localStorage.getItem("hfw_done") || "[]"),
+  );
+  let filter = "all";
+  
+  function save() {
+    localStorage.setItem("hfw_done", JSON.stringify([...done]));
+  }
+  
+  function toggle(id) {
+    done.has(id) ? done.delete(id) : done.add(id);
+    save();
+    render();
+  }
+  
+  function clearAll() {
+    if (confirm("Reset ALL progress?")) {
+      done.clear();
+      save();
+      render();
+    }
+  }
+  
+  function setFilter(f) {
+    filter = f;
+    document
+        .querySelectorAll(".fbtn")
+        .forEach((b) =>
+            b.classList.toggle("active", b.dataset.f === f),
+        );
+    render();
+  }
+  
+  function render() {
+    const q = document.getElementById("search").value.toLowerCase();
+    
+    const visible = ALL.filter((item) => {
+      if (q && !item.name.toLowerCase().includes(q)) return false;
+      if (filter === "incomplete") return !done.has(item.id);
+      if (filter === "complete") return done.has(item.id);
+      if (filter !== "all") return item.key === filter;
+      return true;
+    });
+    
+    // Stats
+    const pct = ALL.length
+        ? Math.round((done.size / ALL.length) * 100)
+        : 0;
+    document.getElementById("s-done").textContent = done.size;
+    document.getElementById("s-total").textContent = ALL.length;
+    document.getElementById("s-pct").textContent = pct + "%";
+    document.getElementById("s-bar").style.width = pct + "%";
+    
+    // Group by category key, preserving CATEGORIES order
+    const grouped = {};
+    visible.forEach((item) => {
+      (grouped[item.key] = grouped[item.key] || []).push(item);
+    });
+    
+    const mc = document.getElementById("main-content");
+    if (!Object.keys(grouped).length) {
+      mc.innerHTML =
+          '<div class="empty-state">No quests found. Try a different search or filter.</div>';
+      return;
+    }
+    
+    mc.innerHTML = "";
+    const collapsed = JSON.parse(
+        sessionStorage.getItem("hfw_col") || "{}",
+    );
+    
+    CATEGORIES.forEach((cat) => {
+      const items = grouped[cat.key];
+      if (!items) return;
+      
+      const catDone = items.filter((i) => done.has(i.id)).length;
+      const isCollapsed = collapsed[cat.key];
+      
+      const sec = document.createElement("div");
+      sec.className = "category-section";
+      
+      const hdr = document.createElement("div");
+      hdr.className =
+          "category-header" + (isCollapsed ? " collapsed" : "");
+      hdr.innerHTML = `
       <span class="cat-title">${cat.icon} ${cat.label}</span>
       <span class="cat-progress">${catDone}/${items.length}</span>
       <span class="type-tag" style="background:${cat.bg};color:${cat.color}">${cat.tag}</span>
       <span class="collapse-icon">▾</span>
     `;
-                    hdr.onclick = () => {
-                        hdr.classList.toggle("collapsed");
-                        const col = JSON.parse(
-                            sessionStorage.getItem("hfw_col") || "{}",
-                        );
-                        col[cat.key] = hdr.classList.contains("collapsed");
-                        sessionStorage.setItem("hfw_col", JSON.stringify(col));
-                    };
-
-                    const grid = document.createElement("div");
-                    grid.className = "quest-grid";
-                    items.forEach((item) => {
-                        const isDone = done.has(item.id);
-                        const div = document.createElement("div");
-                        div.className = "quest-item" + (isDone ? " done" : "");
-                        div.innerHTML = `<div class="checkbox"><span class="checkmark">✓</span></div><div class="quest-name">${item.name}</div>`;
-                        div.onclick = () => toggle(item.id);
-                        grid.appendChild(div);
-                    });
-
-                    sec.appendChild(hdr);
-                    sec.appendChild(grid);
-                    mc.appendChild(sec);
-                });
-            }
-
-            render();
-        </script>
-    </body>
+      hdr.onclick = () => {
+        hdr.classList.toggle("collapsed");
+        const col = JSON.parse(
+            sessionStorage.getItem("hfw_col") || "{}",
+        );
+        col[cat.key] = hdr.classList.contains("collapsed");
+        sessionStorage.setItem("hfw_col", JSON.stringify(col));
+      };
+      
+      const grid = document.createElement("div");
+      grid.className = "quest-grid";
+      items.forEach((item) => {
+        const isDone = done.has(item.id);
+        const div = document.createElement("div");
+        div.className = "quest-item" + (isDone ? " done" : "");
+        div.innerHTML = `<div class="checkbox"><span class="checkmark">✓</span></div><div class="quest-name">${item.name}</div>`;
+        div.onclick = () => toggle(item.id);
+        grid.appendChild(div);
+      });
+      
+      sec.appendChild(hdr);
+      sec.appendChild(grid);
+      mc.appendChild(sec);
+    });
+  }
+  
+  render();
+</script>
+</body>
 </html>
