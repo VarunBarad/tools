@@ -8,6 +8,14 @@ const TOOLS = [
     accent: "#c0823a",
   },
   {
+    name: "Random Starred Repos",
+    description:
+      "Discover random repositories starred by any GitHub user.",
+    file: "github-starred-web.html",
+    icon: "⭐",
+    accent: "#238636",
+  },
+  {
     name: "A4 Scan Layout",
     description:
       "Place two scanned images on an A4 page with a title, then print or export as PNG/JPEG.",
