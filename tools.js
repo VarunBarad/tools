@@ -24,7 +24,7 @@ const TOOLS = [
     accent: "#4a90d9",
   },
   {
-    name: "Match-2 Memory Game",
+    name: "Memory Match-2 Game",
     description:
       "A memory training game where you match 2 cards to eliminate them.",
     file: "mm2-game.html",
